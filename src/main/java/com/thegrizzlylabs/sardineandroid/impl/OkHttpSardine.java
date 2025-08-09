@@ -2,8 +2,6 @@ package com.thegrizzlylabs.sardineandroid.impl;
 
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
 import com.thegrizzlylabs.sardineandroid.DavAce;
 import com.thegrizzlylabs.sardineandroid.DavAcl;
 import com.thegrizzlylabs.sardineandroid.DavPrincipal;
@@ -41,7 +39,6 @@ import com.thegrizzlylabs.sardineandroid.model.Write;
 import com.thegrizzlylabs.sardineandroid.report.SardineReport;
 import com.thegrizzlylabs.sardineandroid.util.SardineUtil;
 
-import org.apache.commons.net.io.Util;
 import org.w3c.dom.Element;
 
 import java.io.File;
@@ -296,8 +293,7 @@ public class OkHttpSardine implements Sardine {
     }
 
     @Override
-    public void put(String url, InputStream dataStream) throws IOException
-    {
+    public void put(String url, InputStream dataStream) throws IOException {
         RequestBody rb = create(MediaType.parse("binary/octet-stream"), dataStream);
 
         Request request = new Request.Builder()
@@ -308,7 +304,9 @@ public class OkHttpSardine implements Sardine {
                 .addHeader("Content-Length", "-1")
                 .build();
 
-        Response r = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
+            // Response handled automatically by try-with-resources
+        }
     }
 
     @Override
@@ -640,6 +638,7 @@ public class OkHttpSardine implements Sardine {
     public void ignoreCookies() {
         throw new UnsupportedOperationException();
     }
+
     private void execute(Request request) throws IOException {
         execute(request, new VoidResponseHandler());
     }
@@ -649,34 +648,22 @@ public class OkHttpSardine implements Sardine {
         return responseHandler.handleResponse(response);
     }
 
-    private RequestBody create(final MediaType mediaType, final InputStream inputStream)
-    {
-        return new RequestBody()
-        {
+    private RequestBody create(final MediaType mediaType, final InputStream inputStream) {
+        return new RequestBody() {
             @Override
-            public MediaType contentType()
-            {
+            public MediaType contentType() {
                 return mediaType;
             }
 
             @Override
-            public long contentLength()
-            {
+            public long contentLength() {
                 return -1;
             }
 
             @Override
-            public void writeTo(@NonNull BufferedSink sink) throws IOException
-            {
-                Source source = null;
-                try
-                {
-                    source = Okio.source(inputStream);
+            public void writeTo(BufferedSink sink) throws IOException {
+                try (Source source = Okio.source(inputStream)) {
                     sink.writeAll(source);
-                }
-                finally
-                {
-                    Util.closeQuietly(source);
                 }
             }
         };

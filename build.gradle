@@ -17,11 +17,11 @@ apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         minSdkVersion 15
-        consumerProguardFiles 'proguard-rules.pro'
+        consumerProguardFiles 'consumer-rules.pro'
     }
     namespace "com.thegrizzlylabs.sardineandroid"
 
@@ -38,7 +38,7 @@ android {
 }
 
 dependencies {
-    api 'com.squareup.okhttp3:okhttp:4.12.0'
+    api 'com.squareup.okhttp3:okhttp:5.1.0'
 
     implementation('org.simpleframework:simple-xml:2.7.1') {
         exclude module: 'stax'
